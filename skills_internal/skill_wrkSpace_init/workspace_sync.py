@@ -27,7 +27,7 @@ ignored_keywords = {
     "USER.md", "SOUL.md", "WORKSPACE_GUIDE_zh.md", "WORKSPACE_GUIDE_en.md",
     ".agent", "skills", "skills_internal", "skills_external", "FastMCP",
     "docstrings", "type hints", "private_info.json", "trigger_auth_gui",
-    "wipe_sensitive_data", "get_auth_status", "mcp_server.py", "skills/",
+    "wipe_sensitive_data", "get_auth_status", "mcp_server.py", "fastmcp_workspace_sync.py", "skills/",
     "calc", "workspace_sync.py", "mcp_config.json", "wrkSpace_ai", "arv"
 }
 

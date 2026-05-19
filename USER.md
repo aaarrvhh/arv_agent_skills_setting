@@ -38,4 +38,7 @@ last_updated: 2026-05-19
   - 存放於根目錄 `skills/` 與 `.agent/skills_internal/`、`.agent/skills_external/`。
   - 嚴格遵守 **按需加載 (Load-on-Demand)**，不得隨意遍歷。
 
+- **Git 與指令執行規範**:
+  - 嚴禁在每次修改或新增檔案後自動執行 `git status` 或其他狀態檢查指令，以避免頻繁打擾用戶審批。
+  - 僅在完成階段性工作、或用戶明確要求進行儲存庫同步時，才執行 Git 相關指令。
 

@@ -1,20 +1,42 @@
-﻿---
+---
 name: build_mcp_server
-description: ??AI Agent 撱箇? MCP (Model Context Protocol) Server ??撠??---
-# 撱箇? MCP Server
+description: 引導 AI Agent 建立 MCP (Model Context Protocol) Server 的技能方法。
+---
+# MCP Tool Build Specifications (MCP 工具建構規範)
 
-?祆???(Skill) ??鈭身閮?撱箇蔭 MCP Server ??撠???其誑撠?唳??函?撘??賢? (Capabilities) ?湧蝯?AI Agent (憒?Claude ??Antigravity) 雿輻??
-## ?嗆??極雿?蝔?(Architecture & Workflow)
+## 技能描述
+本技能定義了專案內自訂工具的兩種開發與建構模式。開發者與 Agent 必須依據工具的「通用性需求」與「模型規模（如大模型或 1B~2B 小模型）」，選擇適當的模式進行開發。
 
-?箸 PMS AutoReport ?瑽?銝???? MCP ?游??府?萄儐?惜 (Layered) ?身閮撘?
+## 模式一：標準解耦模式 (Standard Decoupled Mode)
+*適用場景：追求終極跨平台通用、需要對接小模型（如 Gemma 3:1b、Qwen 2.5:1.5b），或不希望工具與特定的 FastMCP 框架高階語法綁定時。*
 
-### 1. ?賡?詨??摩 (The Client Layer)
-隢撠?AI Tool ??蝢拍?亥?銴???璆剝?頛舀毽?其?韏瑯?- 撠????詨??? (靘? HTTP requests??脯??澈?亥岷) ?函??賢???嗾瘛具蝡? Python 憿 (靘? `PMSClient`)??- 蝣箔???撅文??函蝡隞颱? GUI ??CLI ?摩??
-### 2. 閮剖? MCP Server (The Tool Layer)
-撱箇?銝??撅祉??脣暺?(靘? `src/mcp_server.py`)嚗蒂雿輻憒?`FastMCP` ?見?撘澈??- 雿輻 `@mcp.tool()` 鋆ˇ??(Decorator) 靘?脩摰??寞???- **璆萄漲?? (CRITICAL)**嚗瘥???Tool ?啣神皜??`docstrings` ??`type hints` (??內)?I ????閬?牧????迨?圾憒?隞亙?雿?雿輻閰?Tool??
-### 3. 摰?啗???霅??梁? (Credentials & Privacy)
-隢撘瑁翰雿輻??亙 AI ?予隞銝剛撓?亙?蝣?(??瘨?Token 銝血葆靘蝘◢????- **?砍?脣? (Local Storage)**嚗??砍瑼? (靘? `private_info.json`) 霈??霅?閮?- **閫貊?砍 UI (Trigger Local UI)**嚗?靘???Tool (靘? `trigger_auth_gui`)嚗蝻箏?隤?鞈???AI ?臭誑銝餃??澆摰?Tool ?府閬?砍敶銝??GUI 閬? (憒?Tkinter)嚗?雿輻?摰?啗撓?亙?蝣潦?- **皜?撌亙 (Wipe Utility)**嚗?銝??`wipe_sensitive_data` 撌亙嚗??拐蝙?刻?澈撠???????隤?鞈???Log??
-### 4. ??閮箸撌亙 (Diagnostic Tools)
-??賢鼠??AI 鈭圾?芾澈??????(Readiness)?? Tools??- 蝭?嚗get_auth_status` ?迂 AI ?典?閰血銵??遙??嚗蜓?炎?交?血歇?瑕?敹???霅?敺?銝剝銵仃??
-## ??靘?(Example Reference)
-憒??亦?甇斗芋撘?摰撖虫?蝭?嚗???`PMS_AutoReport_teddy` 撠???撅內鈭?雿??喟絞?單頧??箇帘?亦? MCP Server嚗??雁???喟絞 CLI/GUI ?瑁???銝摰寞扼?
+### 檔案分工說明
+1. **schema.json (規格定義書)**
+   - 本工具的唯一規格標準，採用通用 JSON Schema 格式。
+   - 內含工具名稱、功能描述、以及 Agent 呼叫時必須帶入的參數型態。
+   - **禁止**在此檔案中寫入任何與 MCP 協定綁定的特定語法，確保此規格書可以被任意其他 AI 平台（如純 OpenAI/Gemini API、LangChain、CrewAI）直接複用。
+2. **mcp_server.py (邏輯實作與 MCP 封裝)**
+   - 本工具的程式碼本體，使用 `mcp.server` 的基礎低階庫。
+   - 運作時，它會動態讀取同目錄下的 `schema.json` 作為對外宣告的規格並向 IDE 註冊。
+   - 內部直接包含本工具的核心執行邏輯（不另設 main.py），負責接收 AI 參數並執行。
+
+## 模式二：FastMCP 整合模式 (FastMCP Integrated Mode)
+*適用場景：僅在本地端支援 MCP 的 IDE 環境（如 Antigravity, Cursor）中使用、對接推理能力強的大模型，追求極速開發與「程式碼即規格（Code-as-Schema）」時。*
+
+### 檔案分工說明
+1. **fastmcp_server.py (單一整合檔)**
+   - 本模式**不需要**獨立的 `schema.json`。
+   - 使用 Anthropic 官方的 `mcp.server.fastmcp` 高階庫。
+   - 工具的名稱、描述與參數型態，直接透過 Python 的型態提示（Type Hints）與 Docstring 寫在同一個檔案中。
+   - 框架在啟動時，會自動內省（Introspect）此檔案並動態將規格發布給 IDE。
+
+## 檔案命名與分工規範
+
+### 【選擇 A：標準解耦模式】— 適用於小模型/跨平台
+- 規格書命名：必須為 `schema.json`
+- 伺服器命名：必須為 `mcp_server_[工具名稱].py` (例如：`mcp_server_bootloader.py`)
+- 註記：此 Python 檔使用 low-level SDK，啟動時會主動讀取同目錄下的 `schema.json`。
+
+### 【選擇 B：FastMCP 整合模式】— 適用於大模型/極速開發
+- 檔案命名：必須為 `fastmcp_[工具名稱].py` (例如：`fastmcp_bootloader.py`)
+- 註記：此模式不允許存在 `schema.json`，規格直接內嵌於 Python 的 Type Hints 與 Docstring 中。
