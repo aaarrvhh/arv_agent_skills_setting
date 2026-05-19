@@ -80,10 +80,34 @@ def git_push(repo_path: str, remote: str = "", branch: str = "") -> str:
         return f"Error: Path '{repo_path}' does not exist."
     ensure_git_pager(repo_path)
     
-    github_txt_path = r"d:\fxn_arvin\antigravity_ai_\private_security\arv_github.txt"
+    github_txt_path = None
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    index_paths = [
+        os.path.abspath(os.path.join(script_dir, "..", "..", "..", "private_security", "arv_ps_index.txt")),
+        r"d:\fxn_arvin\antigravity_ai_\private_security\arv_ps_index.txt",
+        r"f:\arv_google_antigravity\private_security\arv_ps_index.txt"
+    ]
+    fallback = r"d:\fxn_arvin\antigravity_ai_\private_security\arv_github.txt"
+    for ip in index_paths:
+        if os.path.exists(ip):
+            try:
+                with open(ip, "r", encoding="utf-8") as f:
+                    for line in f:
+                        if "=" in line:
+                            key, value = line.split("=", 1)
+                            if key.strip() == "SYS_NODE_93":
+                                github_txt_path = os.path.join(os.path.dirname(ip), value.strip())
+                                break
+            except Exception as e:
+                print(f"Error reading index file {ip}: {e}")
+            if github_txt_path:
+                break
+    if not github_txt_path:
+        github_txt_path = fallback
+
     repo_url = ""
     token = ""
-    if os.path.exists(github_txt_path):
+    if github_txt_path and os.path.exists(github_txt_path):
         try:
             with open(github_txt_path, "r", encoding="utf-8") as f:
                 for line in f:

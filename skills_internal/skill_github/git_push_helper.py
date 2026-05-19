@@ -5,7 +5,28 @@ import subprocess
 # Paths
 WORKSPACE_ROOT = r"d:\fxn_arvin\antigravity_ai_"
 AGENT_DIR = os.path.join(WORKSPACE_ROOT, ".agent")
-GITHUB_TXT_PATH = os.path.join(WORKSPACE_ROOT, "private_security", "arv_github.txt")
+
+def get_github_txt_path():
+    index_paths = [
+        os.path.join(WORKSPACE_ROOT, "private_security", "arv_ps_index.txt"),
+        r"d:\fxn_arvin\antigravity_ai_\private_security\arv_ps_index.txt",
+        r"f:\arv_google_antigravity\private_security\arv_ps_index.txt"
+    ]
+    fallback = os.path.join(WORKSPACE_ROOT, "private_security", "arv_github.txt")
+    for ip in index_paths:
+        if os.path.exists(ip):
+            try:
+                with open(ip, "r", encoding="utf-8") as f:
+                    for line in f:
+                        if "=" in line:
+                            key, value = line.split("=", 1)
+                            if key.strip() == "SYS_NODE_93":
+                                return os.path.join(os.path.dirname(ip), value.strip())
+            except Exception as e:
+                print(f"Error reading index file {ip}: {e}")
+    return fallback
+
+GITHUB_TXT_PATH = get_github_txt_path()
 
 def read_config():
     if not os.path.exists(GITHUB_TXT_PATH):
