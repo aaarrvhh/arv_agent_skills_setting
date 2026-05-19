@@ -13,7 +13,7 @@ When this workspace is first opened, the Agent MUST **strictly focus and align w
 2. **`ppt_ai_present`**: The primary project directory currently in progress or set for execution.
 
 ### Priority 2 (Workspace Core & Side Projects)
-3. **`wrkSpace_antigravity` / `wrkSpace_ai`**: High-level structure definitions of the workspace.
+3. **`wrkSpace_ai`**: High-level structure definitions of the workspace.
 4. **Other Project Directories**:
    - `PMS_AutoReport_teddy20260505` (Automated Daily Reporting system)
    - `discord_connection` (Discord Bot Integration workspace)
@@ -29,6 +29,7 @@ Model Context Protocol (MCP) servers configured and operational in this environm
 
 - **PMS AutoReport**: `PMS_AutoReport_teddy20260505/src/mcp_server.py`
 - **Discord Connection**: `discord_connection/src/mcp_server.py`
+- **Github Connection**: `.agent/skills_internal/skill_github/fastmcp_github.py`
 
 ---
 

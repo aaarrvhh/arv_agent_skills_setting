@@ -13,7 +13,7 @@
 2. **`ppt_ai_present`**: 當前正在積極開發與執行的優先專案目錄。
 
 ### 第二優先級 (架構與周邊專案)
-3. **`wrkSpace_antigravity` / `wrkSpace_ai`**: 探索工作空間的基礎結構定義。
+3. **`wrkSpace_ai`**: 探索工作空間的基礎結構定義。
 4. **其他專案開發資料夾**:
    - `PMS_AutoReport_teddy20260505` (自動工作日誌系統)
    - `discord_connection` (Discord 機器人整合系統)
@@ -29,6 +29,7 @@
 
 - **PMS AutoReport**: `PMS_AutoReport_teddy20260505/src/mcp_server.py`
 - **Discord Connection**: `discord_connection/src/mcp_server.py`
+- **Github Connection**: `.agent/skills_internal/skill_github/fastmcp_github.py`
 
 ---
 

@@ -36,7 +36,7 @@ def get_actual_projects(target_workspace=None):
     projects = {}
     found_workspace = False
     
-    wrkspace_folder_name = "wrkSpace_antigravity"
+    wrkspace_folder_name = "wrkSpace_ai"
     wrkspace_path = os.path.join(parent_dir, wrkspace_folder_name)
     
     # 1. 蒐集所有可能的 .code-workspace 檔案
@@ -170,7 +170,7 @@ def perform_sync(apply_changes=False, target_workspace=None):
         # 1. 大小寫拼寫比對與更正
         # 尋找所有 markdown 反引號內的單字
         for i, line in enumerate(lines):
-            # 匹配例如 `wrkspace_antigravity`
+            # 匹配例如 `wrkspace_ai`
             matches = re.findall(r'`([^`]+)`', line)
             for match in matches:
                 # 排除忽略的關鍵字或路徑
@@ -181,9 +181,9 @@ def perform_sync(apply_changes=False, target_workspace=None):
                 match_lower = match_clean.lower()
                 
                 correct_first = None
-                # 另外特別處理 wrkSpace_antigravity，因為它有時被忽略
-                if match_lower == "wrkspace_antigravity":
-                    correct_first = "wrkSpace_antigravity"
+                # 另外特別處理 wrkSpace_ai，因為它有時被忽略
+                if match_lower == "wrkspace_ai":
+                    correct_first = "wrkSpace_ai"
                 elif match_lower in actual_projects:
                     correct_first = actual_projects[match_lower]["name"]
                 
@@ -210,7 +210,7 @@ def perform_sync(apply_changes=False, target_workspace=None):
                         continue
                     match_clean = parts[0]
                     if match_clean not in ignored_keywords and not match_clean.endswith(('.md', '.py', '.json')):
-                        if match_clean.lower() not in actual_projects and match_clean != "wrkSpace_antigravity":
+                        if match_clean.lower() not in actual_projects and match_clean != "wrkSpace_ai":
                             # 檢查是否為專案名稱特徵（無特殊符號、字母底線組成）
                             if re.match(r'^[a-zA-Z0-9_\-]+$', match_clean):
                                 documented_projects.add(match_clean)
@@ -231,7 +231,7 @@ def perform_sync(apply_changes=False, target_workspace=None):
             ws_basename = os.path.basename(selected_workspace)
             for idx, l in enumerate(lines):
                 if "| **工作空間結構** |" in l:
-                    expected_content = f"wrkSpace_antigravity/{ws_basename}"
+                    expected_content = f"wrkSpace_ai/{ws_basename}"
                     m = re.search(r'`([^`]+)`', l)
                     if m and m.group(1) != expected_content:
                         new_line = l.replace(f"`{m.group(1)}`", f"`{expected_content}`")
