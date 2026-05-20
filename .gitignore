@@ -1,0 +1,3 @@
+# Ignore dynamically generated path policy
+path_policy.py
+__pycache__/

@@ -2,13 +2,19 @@ import os
 import sys
 import subprocess
 
-_dump_info_path = r"f:\arv_google_antigravity\dump_info"
-if _dump_info_path not in sys.path:
-    sys.path.append(_dump_info_path)
+# Dynamically resolve .agent path and import path_policy
+current_dir = os.path.dirname(os.path.abspath(__file__))
+agent_dir = os.path.abspath(os.path.join(current_dir, "..", ".."))
+if agent_dir not in sys.path:
+    sys.path.append(agent_dir)
+import path_policy
+
+if path_policy.DUMP_INFO_PATH not in sys.path:
+    sys.path.append(path_policy.DUMP_INFO_PATH)
 import dudu_byby
 
 # Paths
-WORKSPACE_ROOT = r"f:\arv_google_antigravity"
+WORKSPACE_ROOT = path_policy.WORKSPACE_ROOT
 AGENT_DIR = os.path.join(WORKSPACE_ROOT, ".agent")
 
 def read_config():

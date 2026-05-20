@@ -144,6 +144,17 @@ def perform_sync(apply_changes=False, target_workspace=None):
     """執行比對，並選擇性套用自動同步修正。"""
     actual_projects, selected_workspace = get_actual_projects(target_workspace)
     
+    # Generate path_policy.py dynamically
+    path_policy_path = os.path.join(agent_dir, "path_policy.py")
+    try:
+        with open(path_policy_path, "w", encoding="utf-8") as f:
+            f.write(f'# 自動產生的路徑設定檔 (Auto-generated Path Policy)\n')
+            f.write(f'WORKSPACE_ROOT = r"{parent_dir}"\n')
+            f.write(f'DUMP_INFO_PATH = r"{os.path.join(parent_dir, "dump_info")}"\n')
+        print(f"[系統] 已自動產生 {path_policy_path}")
+    except Exception as e:
+        print(f"[錯誤] 無法產生 path_policy.py: {str(e)}")
+
     print("=" * 60)
     print(" 工作空間專案清單比對工具 (Workspace Project Sync Tool)")
     print("=" * 60)
