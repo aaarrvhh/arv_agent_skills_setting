@@ -2,54 +2,27 @@ import os
 import sys
 import subprocess
 
+_dump_info_path = r"f:\arv_google_antigravity\dump_info"
+if _dump_info_path not in sys.path:
+    sys.path.append(_dump_info_path)
+import dudu_byby
+
 # Paths
-WORKSPACE_ROOT = r"d:\fxn_arvin\antigravity_ai_"
+WORKSPACE_ROOT = r"f:\arv_google_antigravity"
 AGENT_DIR = os.path.join(WORKSPACE_ROOT, ".agent")
 
-def get_github_txt_path():
-    index_paths = [
-        os.path.join(WORKSPACE_ROOT, "private_security", "arv_ps_index.txt"),
-        r"d:\fxn_arvin\antigravity_ai_\private_security\arv_ps_index.txt",
-        r"f:\arv_google_antigravity\private_security\arv_ps_index.txt"
-    ]
-    fallback = os.path.join(WORKSPACE_ROOT, "private_security", "arv_github.txt")
-    for ip in index_paths:
-        if os.path.exists(ip):
-            try:
-                with open(ip, "r", encoding="utf-8") as f:
-                    for line in f:
-                        if "=" in line:
-                            key, value = line.split("=", 1)
-                            if key.strip() == "SYS_NODE_93":
-                                return os.path.join(os.path.dirname(ip), value.strip())
-            except Exception as e:
-                print(f"Error reading index file {ip}: {e}")
-    return fallback
-
-GITHUB_TXT_PATH = get_github_txt_path()
-
 def read_config():
-    if not os.path.exists(GITHUB_TXT_PATH):
-        print(f"Error: Config file not found at {GITHUB_TXT_PATH}")
+    try:
+        repo_url = dudu_byby.get_credential('github', 'GITHUB_REPO_URL')
+        token = dudu_byby.get_credential('github', 'GITHUB_TOKEN')
+        if not repo_url or not token:
+            print("Error: GITHUB_REPO_URL or GITHUB_TOKEN not found in config.")
+            sys.exit(1)
+        return repo_url, token
+    except Exception as e:
+        print(f"Error reading config: {e}")
         sys.exit(1)
-        
-    repo_url = ""
-    token = ""
-    with open(GITHUB_TXT_PATH, "r", encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
-            if not line:
-                continue
-            if line.startswith("GITHUB_REPO_URL="):
-                repo_url = line.split("=", 1)[1].strip()
-            elif line.startswith("GITHUB_TOKEN="):
-                token = line.split("=", 1)[1].strip()
-                
-    if not repo_url or not token:
-        print("Error: GITHUB_REPO_URL or GITHUB_TOKEN not found in config file.")
-        sys.exit(1)
-        
-    return repo_url, token
+
 
 def run_git_cmd(args, cwd):
     print(f"Running: git {' '.join(args)}")

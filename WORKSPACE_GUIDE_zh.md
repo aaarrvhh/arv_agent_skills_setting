@@ -20,6 +20,7 @@
    - `NPCM845D_DTS` (硬體描述與 DTS 專案)
    - `private_security` (安全合規與隱私抹除模組)
    - `merge_uboot_` (Bootloader 與 U-Boot 韌體合併工具)
+   - `dump_info` (系統日誌與資訊傾印)
 
 ---
 

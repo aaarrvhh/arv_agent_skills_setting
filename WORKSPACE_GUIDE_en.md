@@ -20,6 +20,7 @@ When this workspace is first opened, the Agent MUST **strictly focus and align w
    - `NPCM845D_DTS` (Hardware Device Trees & DTS files)
    - `private_security` (Safety & privacy-wipe automation)
    - `merge_uboot_` (Bootloader & U-Boot firmware merging utility)
+   - `dump_info` (System log and info dump)
 
 ---
 
