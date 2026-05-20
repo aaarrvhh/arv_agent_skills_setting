@@ -151,6 +151,9 @@ def perform_sync(apply_changes=False, target_workspace=None):
             f.write(f'# 自動產生的路徑設定檔 (Auto-generated Path Policy)\n')
             f.write(f'WORKSPACE_ROOT = r"{parent_dir}"\n')
             f.write(f'DUMP_INFO_PATH = r"{os.path.join(parent_dir, "dump_info")}"\n')
+            f.write(f'DUDU_BYBY_PATH = r"{os.path.join(parent_dir, "dump_info", "dudu_byby.py")}"\n')
+            f.write(f'DUDU_BYBY_NAME = "dudu_byby"\n')
+            f.write(f'CREDENTIAL_RESOLVER_TOOL = "dudu_byby"\n')
         print(f"[系統] 已自動產生 {path_policy_path}")
     except Exception as e:
         print(f"[錯誤] 無法產生 path_policy.py: {str(e)}")

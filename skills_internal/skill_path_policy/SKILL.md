@@ -23,24 +23,36 @@ description: 規範全工作空間之安全憑證存取策略與限制
 
 ## 🛠️ 實作與使用規範
 
-當要求 Agent 撰寫或重構需要憑證的程式碼時，應遵循以下模式：
+所有專案或工具需要存取憑證時，必須直接向 `.agent/path_policy.py` 查詢路徑與工具名稱，禁止任何硬編碼行為。
+
+### `path_policy.py` 提供的動態變數：
+- `WORKSPACE_ROOT`: 工作空間根目錄的絕對路徑。
+- `DUMP_INFO_PATH`: `dump_info` 目錄的絕對路徑。
+- `DUDU_BYBY_PATH`: 憑證解析工具 `dudu_byby.py` 的絕對實體路徑。
+- `DUDU_BYBY_NAME` / `CREDENTIAL_RESOLVER_TOOL`: 憑證解析工具的模組名稱 (`"dudu_byby"`).
+
+### 正確使用範例：
 ```python
 import sys
 import os
 
-# 動態尋找 .agent 目錄並匯入 path_policy (嚴禁寫死絕對路徑)
+# 1. 動態尋找 .agent 目錄並匯入 path_policy (嚴禁寫死絕對路徑)
 current_dir = os.path.dirname(os.path.abspath(__file__))
-# 根據腳本深度向上推導至 .agent (視腳本所在位置調整)
+# 根據腳本位置向上推導至 .agent 目錄
 agent_dir = os.path.abspath(os.path.join(current_dir, "..", "..", ".agent")) 
 if agent_dir not in sys.path:
     sys.path.append(agent_dir)
 import path_policy
 
+# 2. 將憑證解析工具的目錄加入 sys.path
 if path_policy.DUMP_INFO_PATH not in sys.path:
     sys.path.append(path_policy.DUMP_INFO_PATH)
-import dudu_byby
 
-# 正確：僅取得 Token 或 ID
+# 3. 透過 path_policy 提供的工具名稱進行動態導入或調用
+resolver_module = path_policy.CREDENTIAL_RESOLVER_TOOL
+dudu_byby = __import__(resolver_module)
+
+# 4. 正確取得憑證 Token 或 ID
 token = dudu_byby.get_credential('service_name', 'TOKEN_KEY')
 
 # 錯誤示範 (嚴禁)：

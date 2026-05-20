@@ -11,7 +11,7 @@ import path_policy
 
 if path_policy.DUMP_INFO_PATH not in sys.path:
     sys.path.append(path_policy.DUMP_INFO_PATH)
-import dudu_byby
+dudu_byby = __import__(path_policy.CREDENTIAL_RESOLVER_TOOL)
 
 # Paths
 WORKSPACE_ROOT = path_policy.WORKSPACE_ROOT
