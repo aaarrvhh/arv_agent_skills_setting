@@ -47,15 +47,12 @@ def list_skills(workspace_root):
         if not base_dir.exists() or not base_dir.is_dir():
             continue
             
-        for child in base_dir.iterdir():
-            if child.is_dir():
-                skill_md_path = child / "SKILL.md"
-                if skill_md_path.exists():
-                    # Compute relative path from workspace root for cleaner output
-                    rel_path = skill_md_path.parent.relative_to(Path(workspace_root))
-                    info = parse_skill_md(skill_md_path)
-                    info['path'] = str(rel_path).replace('\\', '/')
-                    skills.append(info)
+        for skill_md_path in base_dir.rglob("SKILL.md"):
+            # Compute relative path from workspace root for cleaner output
+            rel_path = skill_md_path.parent.relative_to(Path(workspace_root))
+            info = parse_skill_md(skill_md_path)
+            info['path'] = str(rel_path).replace('\\', '/')
+            skills.append(info)
                     
     return skills
 
