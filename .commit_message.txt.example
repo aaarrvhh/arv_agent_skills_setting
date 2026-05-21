@@ -1,0 +1,17 @@
+# Usage (Windows PowerShell):
+# Copy-Item .commit_message.txt.example .commit_message.txt
+#
+# Usage (Linux / macOS):
+# cp .commit_message.txt.example .commit_message.txt
+
+type(scope): subject line short description
+
+- Detail bullet point 1
+- Detail bullet point 2
+
+
+changed by author
+
+# Git Commit Commands:
+# git commit -F .commit_message.txt
+# git commit --amend -F .commit_message.txt
