@@ -29,6 +29,10 @@ last_updated: 2026-05-19
   - **全英文開發**：代碼內部的命名、Log、註解等均維持 100% 英文。
   - **Clean Code**：追求高可讀性、重構性與模組化。
 
+## Developer Preferences
+- **Architecture Philosophy**: I prefer heavily offloading tasks to local Python tools rather than relying on pure LLM generation. 
+- **Tool Development**: When I ask you to automate a task (e.g., firmware analysis, log monitoring), you should automatically design and implement it as a reusable Python tool/script or MCP server first, rather than just giving me a one-off text explanation.
+
 ## 備忘錄與環境
 
 - **MCP Servers 集成**:
