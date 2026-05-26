@@ -63,18 +63,19 @@ def git_add(repo_path: str, files: list[str] = None) -> str:
     return "Files added successfully." if success else f"Error adding files:\n{stderr}"
 
 @mcp.tool()
-def git_commit(repo_path: str, message: str) -> str:
+def git_commit(repo_path: str, message: str, agent_context: str = "Claude Chat") -> str:
     """
     Run 'git commit -m' to commit staged changes.
     - repo_path: The absolute path of the git repository.
-    - message: The commit message. A signature '(committed by Antigravity Agent in VS Code)' will be appended.
+    - message: The commit message.
+    - agent_context: The interface/IDE from which the commit is made (e.g. 'Claude Chat', 'VS Code'). Defaults to 'Claude Chat'.
     """
     if not os.path.exists(repo_path):
         return f"Error: Path '{repo_path}' does not exist."
     ensure_git_pager(repo_path)
     
-    signature = " (committed by Antigravity Agent in VS Code)"
-    if signature not in message:
+    signature = f" (committed by Antigravity Agent in {agent_context})"
+    if "committed by Antigravity Agent in" not in message:
         message += signature
         
     success, stdout, stderr = run_cmd(["git", "commit", "-m", message], repo_path)
@@ -150,6 +151,42 @@ def git_log(repo_path: str, limit: int = 5) -> str:
     ensure_git_pager(repo_path)
     success, stdout, stderr = run_cmd(["git", "log", "-n", str(limit)], repo_path)
     return stdout if success else f"Error loading log:\n{stderr}"
+
+@mcp.tool()
+def git_amend(repo_path: str, message: str, agent_context: str = "Claude Chat") -> str:
+    """
+    Run 'git commit --amend' to rewrite the last commit message.
+    - repo_path: The absolute path of the git repository.
+    - message: The new commit message.
+    - agent_context: The interface/IDE from which the commit is made (e.g. 'Claude Chat', 'VS Code'). Defaults to 'Claude Chat'.
+    """
+    if not os.path.exists(repo_path):
+        return f"Error: Path '{repo_path}' does not exist."
+    ensure_git_pager(repo_path)
+
+    signature = f" (committed by Antigravity Agent in {agent_context})"
+    if "committed by Antigravity Agent in" not in message:
+        message += signature
+
+    success, stdout, stderr = run_cmd(["git", "commit", "--amend", "-m", message], repo_path)
+    return stdout if success else f"Error amending:\n{stderr}\nStdout:\n{stdout}"
+
+@mcp.tool()
+def git_pull(repo_path: str, remote: str = "origin", branch: str = "") -> str:
+    """
+    Run 'git pull' to fetch and merge changes from the remote repository.
+    - repo_path: The absolute path of the git repository.
+    - remote: The remote name (default: 'origin').
+    - branch: The branch name to pull. Defaults to the current tracking branch.
+    """
+    if not os.path.exists(repo_path):
+        return f"Error: Path '{repo_path}' does not exist."
+    ensure_git_pager(repo_path)
+    cmd = ["git", "pull", remote]
+    if branch:
+        cmd.append(branch)
+    success, stdout, stderr = run_cmd(cmd, repo_path)
+    return stdout if success else f"Error pulling:\n{stderr}\nStdout:\n{stdout}"
 
 if __name__ == "__main__":
     mcp.run(transport='stdio')
