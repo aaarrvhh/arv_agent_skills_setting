@@ -99,33 +99,26 @@ def git_push(repo_path: str, remote: str = "", branch: str = "") -> str:
     except Exception as e:
         return f"Error reading credentials from dudu_byby: {str(e)}"
             
-    auth_url = ""
-    if repo_url and token:
-        if repo_url.startswith("https://"):
-            auth_url = repo_url.replace("https://", f"https://{token}@")
-            
-    revert_url = False
-    if auth_url:
-        remote_name = remote if remote else "origin"
-        success, _, stderr = run_cmd(["git", "remote", "set-url", remote_name, auth_url], repo_path)
-        if success:
-            revert_url = True
-        else:
-            return f"Error setting authenticated remote URL: {stderr}"
-            
-    try:
-        cmd = ["git", "push"]
-        if remote and branch:
-            cmd.extend(["-u", remote, branch])
-        elif branch:
-            cmd.extend(["origin", branch])
-            
-        success, stdout, stderr = run_cmd(cmd, repo_path)
-        return stdout if success else f"Error pushing:\n{stderr}\nStdout:\n{stdout}"
-    finally:
-        if revert_url:
-            remote_name = remote if remote else "origin"
-            run_cmd(["git", "remote", "set-url", remote_name, repo_url], repo_path)
+    import base64
+    auth_string = f"git:{token}"
+    b64_auth = base64.b64encode(auth_string.encode()).decode()
+    
+    remote_name = remote if remote else "origin"
+    
+    cmd = [
+        "git", "-c", f"http.extraheader=Authorization: Basic {b64_auth}",
+        "push"
+    ]
+    if remote and branch:
+        cmd.extend(["-u", remote_name, branch])
+    elif branch:
+        cmd.extend([remote_name, branch])
+    else:
+        # Default to push to remote_name (e.g. origin) without specifying branch if not provided
+        cmd.extend([remote_name])
+        
+    success, stdout, stderr = run_cmd(cmd, repo_path)
+    return stdout if success else f"Error pushing:\n{stderr}\nStdout:\n{stdout}"
 
 @mcp.tool()
 def git_diff(repo_path: str) -> str:

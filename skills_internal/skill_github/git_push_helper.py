@@ -31,70 +31,84 @@ def read_config():
 
 
 def run_git_cmd(args, cwd):
-    print(f"Running: git {' '.join(args)}")
+    # Mask any potential authorization headers in logs
+    printed_args = []
+    for arg in args:
+        if "http.extraheader=Authorization: Basic" in arg:
+            printed_args.append("http.extraheader=Authorization: Basic <TOKEN_MASKED>")
+        else:
+            printed_args.append(arg)
+    print(f"Running: git {' '.join(printed_args)}")
     res = subprocess.run(["git"] + args, cwd=cwd, capture_output=True, text=True)
     if res.returncode != 0:
         print(f"Error executing git command: {res.stderr.strip()}")
         return False, res.stdout, res.stderr
     return True, res.stdout, res.stderr
 
+import argparse
+
 def main():
+    parser = argparse.ArgumentParser(description="Git Push Helper with Dynamic Agent Signature")
+    parser.add_argument("-m", "--message", type=str, default="Upload .agent changes", help="Commit message")
+    parser.add_argument("--agent", type=str, default=None, help="Agent signature, e.g., 'Antigravity Agent in VS Code'")
+    args_cli = parser.parse_args()
+
     repo_url, token = read_config()
     
-    # 1. Get current status
-    success, stdout, _ = run_git_cmd(["status"], AGENT_DIR)
-    if not success:
-        sys.exit(1)
-    print("\nGit Status Output:")
-    print(stdout)
-    
-    # 2. Add files
-    success, _, _ = run_git_cmd(["add", "."], AGENT_DIR)
-    if not success:
-        sys.exit(1)
-        
-    # 3. Commit changes
-    commit_msg = "Upload .agent changes (committed by Antigravity Agent in VS Code)"
-    print(f"Committing changes with message: '{commit_msg}'")
-    res = subprocess.run(["git", "commit", "-m", commit_msg], cwd=AGENT_DIR, capture_output=True, text=True)
-    if res.returncode != 0:
-        if "nothing to commit" in res.stdout or "nothing to commit" in res.stderr:
-            print("Nothing to commit, repository is clean.")
-        else:
-            print(f"Error committing: {res.stderr.strip()}")
+    if args_cli.agent:
+        # 1. Get current status
+        success, stdout, _ = run_git_cmd(["status"], AGENT_DIR)
+        if not success:
             sys.exit(1)
-    else:
-        print(res.stdout.strip())
+        print("\nGit Status Output:")
+        print(stdout)
         
-    # 4. Construct authenticated URL
-    auth_url = repo_url
-    if repo_url.startswith("https://"):
-        auth_url = repo_url.replace("https://", f"https://{token}@")
+        # 2. Add files
+        success, _, _ = run_git_cmd(["add", "."], AGENT_DIR)
+        if not success:
+            sys.exit(1)
+            
+        # 3. Commit changes
+        commit_msg = args_cli.message
+        signature = f" (committed by {args_cli.agent})"
+        if signature not in commit_msg:
+            commit_msg += signature
+
+        print(f"Committing changes with message: '{commit_msg}'")
+        res = subprocess.run(["git", "commit", "-m", commit_msg], cwd=AGENT_DIR, capture_output=True, text=True)
+        if res.returncode != 0:
+            if "nothing to commit" in res.stdout or "nothing to commit" in res.stderr:
+                print("Nothing to commit, repository is clean.")
+            else:
+                print(f"Error committing: {res.stderr.strip()}")
+                sys.exit(1)
+        else:
+            print(res.stdout.strip())
     else:
-        print("Error: GITHUB_REPO_URL must start with https://")
-        sys.exit(1)
+        print("User manual execution detected. Skipping git add and commit. Proceeding directly to push.")
         
     # Get current branch
     success, stdout, _ = run_git_cmd(["rev-parse", "--abbrev-ref", "HEAD"], AGENT_DIR)
     branch = stdout.strip() if success else "main"
     
-    # 5. Push using the authenticated URL
-    try:
-        print("Temporarily setting remote origin URL for push...")
-        run_git_cmd(["remote", "set-url", "origin", auth_url], AGENT_DIR)
-        
-        print(f"Pushing changes to origin {branch}...")
-        success, stdout, stderr = run_git_cmd(["push", "origin", branch], AGENT_DIR)
-        if success:
-            print("Push succeeded!")
-            print(stdout)
-        else:
-            print("Push failed.")
-            print(stderr)
-            sys.exit(1)
-    finally:
-        print("Reverting remote origin URL back to original non-token URL...")
-        run_git_cmd(["remote", "set-url", "origin", repo_url], AGENT_DIR)
+    # 4. Push using http.extraheader
+    import base64
+    auth_string = f"git:{token}"
+    b64_auth = base64.b64encode(auth_string.encode()).decode()
+    
+    print(f"Pushing changes to origin {branch} with temporary in-memory authentication...")
+    success, stdout, stderr = run_git_cmd([
+        "-c", f"http.extraheader=Authorization: Basic {b64_auth}",
+        "push", "origin", branch
+    ], AGENT_DIR)
+    
+    if success:
+        print("Push succeeded!")
+        print(stdout)
+    else:
+        print("Push failed.")
+        print(stderr)
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()

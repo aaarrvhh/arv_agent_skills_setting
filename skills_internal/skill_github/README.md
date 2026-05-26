@@ -35,32 +35,20 @@ cd "d:\fxn_arvin\antigravity_ai_\.agent\skills_internal\skill_github"
 
 ### 步驟 2：執行 Python 腳本
 
-使用 Python 執行該腳本：
-```powershell
-python git_push_helper.py
-```
+* **使用者自行執行（預設無簽名）**：
+  ```powershell
+  python git_push_helper.py
+  ```
+* **Agent 執行（附帶動態簽名）**：
+  ```powershell
+  python git_push_helper.py --agent "Antigravity Agent in VS Code"
+  ```
 
 ### 💡 執行時的輸出範例
 
-當您執行腳本時，會看到類似以下的終端機輸出，說明每個步驟的執行狀態：
+當您執行腳本時（以使用者自行手動執行為例，僅進行推送，跳過 add/commit），會看到類似以下的終端機輸出，說明每個步驟的執行狀態：
 ```text
-Running: git status
-
-Git Status Output:
-On branch main
-Your branch is up to date with 'origin/main'.
-
-Changes not staged for commit:
-  (use "git add <file>..." to update what will be committed)
-  (use "git restore <file>..." to discard changes in working directory)
-        modified:   USER.md
-
-no changes added to commit (use "git add" and/or "git commit -a")
-
-Running: git add .
-Committing changes with message: 'Upload .agent changes (committed by Antigravity Agent in VS Code)'
-[main abc123f] Upload .agent changes (committed by Antigravity Agent in VS Code)
- 1 file changed, 2 insertions(+)
+User manual execution detected. Skipping git add and commit. Proceeding directly to push.
 
 Temporarily setting remote origin URL for push...
 Running: git remote set-url origin https://<TOKEN_HIDDEN>@github.com/aaarrvhh/arv_agent_skills_setting.git
