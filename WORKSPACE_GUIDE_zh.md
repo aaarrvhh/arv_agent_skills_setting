@@ -21,6 +21,7 @@
    - `private_security` (安全合規與隱私抹除模組)
    - `merge_uboot_` (Bootloader 與 U-Boot 韌體合併工具)
    - `dump_info` (系統日誌與資訊傾印)
+   - `rag_doc_gg` (RAG 文件檢索與規格書管理專案 for project gg)
 
 ---
 

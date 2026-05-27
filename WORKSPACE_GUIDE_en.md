@@ -21,6 +21,7 @@ When this workspace is first opened, the Agent MUST **strictly focus and align w
    - `private_security` (Safety & privacy-wipe automation)
    - `merge_uboot_` (Bootloader & U-Boot firmware merging utility)
    - `dump_info` (System log and info dump)
+   - `rag_doc_gg` (RAG Document Retrieval & Spec Management project for project gg)
 
 ---
 
