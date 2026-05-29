@@ -13,6 +13,8 @@
 | `skill_html_ai_present_renderer` | 內部開發 | 負責將大綱渲染為 HTML5 互動簡報 | MCP |
 | `skill_checkthreat` | 內部開發 | 負責技能庫的安全審計與威脅檢查 | No MCP |
 | `skill_wrkSpace_init` | 內部開發 | 用於工作空間初始化配置與導引 | MCP |
+| `skill_rag` | 內部開發 | RAG 規格書檢索與資料庫建置，支援 Word (.docx) 與 Excel (.xlsx) 解析，並支援分批寫入功能 | No MCP |
+| `skill_github` | 內部開發 | 負責將本機特定資料夾初始化為 Git 儲存庫，並安全自動推播到指定的 GitHub 遠端儲存庫 | MCP |
 
 ## 外部開發技能
 - 外部引入的開源技能與設計模板已移至獨立目錄管理。
@@ -23,6 +25,6 @@
 - **讀取限制**：根據 `.init_agent`，Agent 平時不會主動讀取此目錄，僅在需要使用特定技能或進行清單維護時才開啟。
 
 ---
-*最後更新：2026-05-19*
+*最後更新：2026-05-29*
 
 

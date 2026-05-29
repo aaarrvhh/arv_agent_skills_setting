@@ -16,65 +16,110 @@ class DocumentParser:
             raise FileNotFoundError(f"File not found: {file_path}")
 
     def load_and_split(self, chunk_size: int = 800, chunk_overlap: int = 100):
-        """Parse docx paragraphs and tables, maintaining hierarchy and chunking."""
-        doc = docx.Document(self.file_path)
+        """Parse docx or xlsx paragraphs, tables or cells, maintaining hierarchy and chunking."""
         elements = []
         
-        # Traverse body elements to preserve order of paragraphs and tables
-        current_headings = {}
-        for element in doc.element.body:
-            if element.tag.endswith('p'):
-                p = docx.text.paragraph.Paragraph(element, doc)
-                text = p.text.strip()
-                if not text:
+        if self.file_path.endswith('.xlsx') or self.file_path.endswith('.xls'):
+            import openpyxl
+            wb = openpyxl.load_workbook(self.file_path, data_only=True)
+            for sheet in wb.worksheets:
+                sheet_name = sheet.title
+                rows = list(sheet.iter_rows(values_only=True))
+                if not rows:
                     continue
                 
-                # Check style name for headings
-                style_name = p.style.name if p.style else ""
-                heading_level = self._get_heading_level(style_name)
+                # Find the first non-empty row to use as headers
+                header_row = None
+                header_row_idx = 0
+                for idx, r in enumerate(rows):
+                    if any(cell is not None and str(cell).strip() != "" for cell in r):
+                        header_row = r
+                        header_row_idx = idx
+                        break
+                if header_row is None:
+                    continue
                 
-                if heading_level is not None:
-                    # Clear lower level headings
-                    for level in list(current_headings.keys()):
-                        if level >= heading_level:
-                            del current_headings[level]
-                    current_headings[heading_level] = text
+                headers = []
+                for i, h in enumerate(header_row):
+                    val = str(h).strip() if h is not None else ""
+                    if not val:
+                        val = f"Col_{i+1}"
+                    headers.append(val)
                 
-                # Build heading path context
-                heading_path = " > ".join([current_headings[lvl] for lvl in sorted(current_headings.keys())])
-                
-                elements.append({
-                    'type': 'paragraph',
-                    'text': text,
-                    'heading_path': heading_path
-                })
-                
-            elif element.tag.endswith('tbl'):
-                t = docx.table.Table(element, doc)
-                rows_data = []
-                for row in t.rows:
-                    row_data = []
-                    for cell in row.cells:
-                        cell_text = cell.text.strip().replace('\n', ' ')
-                        # Avoid duplicating adjacent merged cells in the same row
-                        if not row_data or row_data[-1] != cell_text:
-                            row_data.append(cell_text)
-                    rows_data.append(row_data)
-                
-                if rows_data:
-                    # Construct markdown table structure
-                    md_lines = []
-                    for idx, row in enumerate(rows_data):
-                        md_lines.append("| " + " | ".join(row) + " |")
-                        if idx == 0:
-                            md_lines.append("| " + " | ".join(["---"] * len(row)) + " |")
+                for r in rows[header_row_idx + 1:]:
+                    if not any(cell is not None and str(cell).strip() != "" for cell in r):
+                        continue
                     
+                    row_parts = []
+                    for h, cell in zip(headers, r):
+                        if cell is not None:
+                            val_str = str(cell).strip()
+                            if val_str:
+                                row_parts.append(f"{h}: {val_str}")
+                    if row_parts:
+                        row_text = ", ".join(row_parts)
+                        elements.append({
+                            'type': 'paragraph',
+                            'text': row_text,
+                            'heading_path': f"Sheet: {sheet_name}"
+                        })
+        else:
+            doc = docx.Document(self.file_path)
+            # Traverse body elements to preserve order of paragraphs and tables
+            current_headings = {}
+            for element in doc.element.body:
+                if element.tag.endswith('p'):
+                    p = docx.text.paragraph.Paragraph(element, doc)
+                    text = p.text.strip()
+                    if not text:
+                        continue
+                    
+                    # Check style name for headings
+                    style_name = p.style.name if p.style else ""
+                    heading_level = self._get_heading_level(style_name)
+                    
+                    if heading_level is not None:
+                        # Clear lower level headings
+                        for level in list(current_headings.keys()):
+                            if level >= heading_level:
+                                del current_headings[level]
+                        current_headings[heading_level] = text
+                    
+                    # Build heading path context
                     heading_path = " > ".join([current_headings[lvl] for lvl in sorted(current_headings.keys())])
+                    
                     elements.append({
-                        'type': 'table',
-                        'text': "\n".join(md_lines),
+                        'type': 'paragraph',
+                        'text': text,
                         'heading_path': heading_path
                     })
+                    
+                elif element.tag.endswith('tbl'):
+                    t = docx.table.Table(element, doc)
+                    rows_data = []
+                    for row in t.rows:
+                        row_data = []
+                        for cell in row.cells:
+                            cell_text = cell.text.strip().replace('\n', ' ')
+                            # Avoid duplicating adjacent merged cells in the same row
+                            if not row_data or row_data[-1] != cell_text:
+                                row_data.append(cell_text)
+                        rows_data.append(row_data)
+                    
+                    if rows_data:
+                        # Construct markdown table structure
+                        md_lines = []
+                        for idx, row in enumerate(rows_data):
+                            md_lines.append("| " + " | ".join(row) + " |")
+                            if idx == 0:
+                                md_lines.append("| " + " | ".join(["---"] * len(row)) + " |")
+                        
+                        heading_path = " > ".join([current_headings[lvl] for lvl in sorted(current_headings.keys())])
+                        elements.append({
+                            'type': 'table',
+                            'text': "\n".join(md_lines),
+                            'heading_path': heading_path
+                        })
 
         # Chunking phase
         chunks = []
@@ -205,17 +250,22 @@ class ChromaStore:
         if not chunks:
             return
         
-        documents = [c['text'] for c in chunks]
-        embeddings = self.embedding_model.encode(documents).tolist()
-        ids = [f"chunk_{i}" for i in range(len(chunks))]
-        metadatas = [c['metadata'] for c in chunks]
-        
-        self.collection.add(
-            ids=ids,
-            embeddings=embeddings,
-            documents=documents,
-            metadatas=metadatas
-        )
+        batch_size = 2000
+        for start_idx in range(0, len(chunks), batch_size):
+            end_idx = min(start_idx + batch_size, len(chunks))
+            batch = chunks[start_idx:end_idx]
+            
+            documents = [c['text'] for c in batch]
+            embeddings = self.embedding_model.encode(documents).tolist()
+            ids = [f"chunk_{i}" for i in range(start_idx, end_idx)]
+            metadatas = [c['metadata'] for c in batch]
+            
+            self.collection.add(
+                ids=ids,
+                embeddings=embeddings,
+                documents=documents,
+                metadatas=metadatas
+            )
 
     def query(self, question: str, top_k: int = 5):
         query_embedding = self.embedding_model.encode([question]).tolist()

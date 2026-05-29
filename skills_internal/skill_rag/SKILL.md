@@ -5,7 +5,7 @@ description: RAG 規格書檢索與資料庫建置技能
 
 # 技能：RAG 規格書檢索與資料庫建置 (RAG Spec Retrieval & DB Builder)
 
-此技能提供跨專案的規格書（docx 格式）解析、區塊化（chunking），並將其建置為向量資料庫（ChromaDB）與關聯式資料庫（SQLite）之功能。
+此技能提供跨專案的規格書（docx 與 xlsx 格式）解析、區塊化（chunking），並將其建置為向量資料庫（ChromaDB）與關聯式資料庫（SQLite）之功能。
 
 ## 🎯 核心原則
 
@@ -14,11 +14,12 @@ description: RAG 規格書檢索與資料庫建置技能
    - 支援 SQLite（輕量關鍵字比對）。
    - 建置 ChromaDB 時，系統會**自動同時建置並輸出 SQLite 資料庫**，確保兩種引擎資料同步。
 
-2. **保留標題階層**：
-   - 解析 docx 時，會保留段落所屬的標題路徑（例如：`Chapter 1 > Section 2`），以便在檢索時提供更佳的上下文資訊。
+2. **保留標題階層與表格結構**：
+   - 解析 docx 時，會保留段落所屬的標題路徑（例如：`Chapter 1 > Section 2`）及標準 Markdown 表格結構。
+   - 解析 xlsx 時，會將工作表 rows 轉換為結構化的 key-value 欄位記錄。
 
-3. **保留表格結構**：
-   - 自動將 Word 規格書中的表格提取並轉換成標準 Markdown 表格結構儲存。
+3. **建置前確認資料筆數**：
+   - 在執行資料庫寫入（Build DB）前，系統必須**先計算並輸出解析出的區塊總筆數（Chunk Count）**。若總筆數超過 ChromaDB 的單次寫入上限（例如 5461 筆），必須以小於或等於 2000 筆為一批次進行分批（batching）寫入，以確保資料庫安全匯入。
 
 ## 🛠️ 使用規範
 

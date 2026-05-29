@@ -1,6 +1,11 @@
 # Project Spec RAG Manager
 
-This tool parses docx specifications and builds/queries a local RAG database using either ChromaDB or SQLite.
+This tool parses Word (.docx) and Excel (.xlsx) specifications and builds/queries a local RAG database using either ChromaDB or SQLite.
+
+## CLI Features & Ingestion
+
+- **Multi-format Support**: Ingests Word (.docx) documents (preserving paragraph styles and markdown tables) and Excel (.xlsx) spreadsheets (ingesting worksheet rows dynamically as structured key-value pairs).
+- **Batching Support**: Automatically chunks large quantities of records into sub-batches of 2000 items to bypass ChromaDB's max batch limit of 5461 entries.
 
 ## CLI Usage
 
